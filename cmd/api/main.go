@@ -1,13 +1,20 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+
+	"github.com/jakskal/user-login/cmd/router"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+)
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=postgres dbname=example password=mypassword sslmode=disable")
+	if err != nil {
+		log.Fatal("failed to connect to database", err)
+	}
+	defer db.Close()
+
+	handler := initHandler(db)
+	router.API(*handler)
 }
