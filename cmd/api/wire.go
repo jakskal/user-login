@@ -4,8 +4,8 @@ package main
 
 import (
 	"github.com/jakskal/user-login/cmd/handler"
-	"github.com/jakskal/user-login/internal/auth"
 	"github.com/jakskal/user-login/internal/login"
+	"github.com/jakskal/user-login/internal/token"
 	"github.com/jakskal/user-login/internal/user"
 	"github.com/jinzhu/gorm"
 
@@ -14,13 +14,13 @@ import (
 
 var repositorySet = wire.NewSet(
 	user.NewRepository,
-	wire.Bind(new(user.UserRepository), new(*user.Repository)),
+	wire.Bind(new(user.RepositorySystem), new(*user.Repository)),
 )
 
 var serviceSet = wire.NewSet(
 	user.NewService,
 	login.NewService,
-	auth.NewService,
+	token.NewService,
 )
 
 var controllerSet = wire.NewSet(

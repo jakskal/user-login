@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jakskal/user-login/internal/auth"
+	"github.com/jakskal/user-login/internal/token"
 	"github.com/jakskal/user-login/internal/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,18 +12,19 @@ import (
 // Service implements login service interface.
 type Service struct {
 	userRepo *user.Repository
-	authSvc  *auth.Service
+	tokenSvc *token.Service
 }
 
 // NewService creates a new Login Service.
-func NewService(userRepo *user.Repository, authSvc *auth.Service) Service {
+func NewService(userRepo *user.Repository, tokenSvc *token.Service) Service {
 	return Service{
 		userRepo: userRepo,
-		authSvc:  authSvc,
+		tokenSvc: tokenSvc,
 	}
 }
 
-func (s *Service) Login(ctx context.Context, req *LoginRequest) (*auth.Token, error) {
+// Login logging in an user.
+func (s *Service) Login(ctx context.Context, req *Request) (*token.Token, error) {
 	user, err := s.userRepo.FindByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, err
@@ -34,7 +35,7 @@ func (s *Service) Login(ctx context.Context, req *LoginRequest) (*auth.Token, er
 		return nil, errors.New("invalid password")
 	}
 
-	token, err := s.authSvc.CreateToken(ctx, &auth.CreateTokenRequest{user.ID})
+	token, err := s.tokenSvc.CreateToken(ctx, &token.CreateTokenRequest{UserID: user.ID})
 	if err != nil {
 		return nil, err
 	}

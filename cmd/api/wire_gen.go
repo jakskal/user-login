@@ -8,8 +8,8 @@ package main
 import (
 	"github.com/google/wire"
 	"github.com/jakskal/user-login/cmd/handler"
-	"github.com/jakskal/user-login/internal/auth"
 	"github.com/jakskal/user-login/internal/login"
+	"github.com/jakskal/user-login/internal/token"
 	"github.com/jakskal/user-login/internal/user"
 	"github.com/jinzhu/gorm"
 )
@@ -31,8 +31,8 @@ func initHandler(db *gorm.DB) *handler.Handler {
 	repository := user.NewRepository(db)
 	service := user.NewService(repository)
 	controller := user.NewController(service)
-	authService := auth.NewService()
-	loginService := login.NewService(repository, authService)
+	tokenService := token.NewService()
+	loginService := login.NewService(repository, tokenService)
 	loginController := login.NewController(loginService)
 	handlerHandler := handler.NewHandler(controller, loginController)
 	return handlerHandler
@@ -40,9 +40,9 @@ func initHandler(db *gorm.DB) *handler.Handler {
 
 // wire.go:
 
-var repositorySet = wire.NewSet(user.NewRepository, wire.Bind(new(user.UserRepository), new(*user.Repository)))
+var repositorySet = wire.NewSet(user.NewRepository, wire.Bind(new(user.RepositorySystem), new(*user.Repository)))
 
-var serviceSet = wire.NewSet(user.NewService, login.NewService, auth.NewService)
+var serviceSet = wire.NewSet(user.NewService, login.NewService, token.NewService)
 
 var controllerSet = wire.NewSet(user.NewController, login.NewController)
 

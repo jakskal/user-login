@@ -16,7 +16,7 @@ func API(handler handler.Handler) {
 		})
 	})
 	r.POST("/register", userController.RegisterUser)
-	r.GET("/user", userController.ListUsers)
 	r.POST("/login", loginController.Login)
+	r.GET("/user", userController.ListUsers)
 	r.Run()
 }

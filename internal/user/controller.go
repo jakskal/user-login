@@ -7,10 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Controller wraps an user service and implement gin context
 type Controller struct {
 	service Service
 }
 
+// RegisterUser regitser a user.
 func (cr *Controller) RegisterUser(c *gin.Context) {
 	var user User
 	err := c.BindJSON(&user)
@@ -36,6 +38,7 @@ func (cr *Controller) RegisterUser(c *gin.Context) {
 	})
 }
 
+// Hello say hello
 func (cr *Controller) Hello(c *gin.Context) {
 	c.JSON(
 		http.StatusOK, gin.H{
@@ -44,6 +47,7 @@ func (cr *Controller) Hello(c *gin.Context) {
 	)
 }
 
+// ListUsers lists all user
 func (cr *Controller) ListUsers(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -63,6 +67,7 @@ func (cr *Controller) ListUsers(c *gin.Context) {
 	)
 }
 
+// NewController create a new User Controller.
 func NewController(service Service) *Controller {
 	return &Controller{
 		service: service,

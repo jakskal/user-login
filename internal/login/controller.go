@@ -7,18 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Controller wraps an login service and implement gin context.
 type Controller struct {
 	service Service
 }
 
+// NewController create a new login controller.
 func NewController(service Service) *Controller {
 	return &Controller{
 		service: service,
 	}
 }
 
+// Login logging in an user.
 func (cr *Controller) Login(c *gin.Context) {
-	var loginRequest *LoginRequest
+	var loginRequest *Request
 	err := c.Bind(&loginRequest)
 	if err != nil {
 		log.Fatal("failed bind sruct", err)
