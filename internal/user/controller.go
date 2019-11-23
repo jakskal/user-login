@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -50,8 +51,11 @@ func (cr *Controller) Hello(c *gin.Context) {
 // ListUsers lists all user
 func (cr *Controller) ListUsers(c *gin.Context) {
 	ctx := c.Request.Context()
-
-	user, err := cr.service.FindUserByID(ctx, "123")
+	userID, ok := c.Get("userID")
+	if !ok {
+		fmt.Println("no userID")
+	}
+	user, err := cr.service.FindUserByID(ctx, userID.(string))
 	if err != nil {
 		c.JSON(
 			http.StatusOK, gin.H{

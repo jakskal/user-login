@@ -2,8 +2,8 @@ package user
 
 // User represents user that use application.
 type User struct {
-	ID       string `json:"id"`
+	ID       string `json:"-"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 	Email    string `json:"email"`
 }

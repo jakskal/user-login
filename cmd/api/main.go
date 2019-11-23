@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("failed to connect to database", err)
 	}
 	defer db.Close()
-
+	db.LogMode(true)
 	handler := initHandler(db)
 	router.API(*handler)
 }

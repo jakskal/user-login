@@ -7,8 +7,9 @@ type Token struct {
 	AccessToken string `json:"access_token"`
 }
 
+// Claims represents information that contained in claim
 type Claims struct {
-	UserID string `json:"user_id"`
+	UserID string
 	jwt.StandardClaims
 }
 

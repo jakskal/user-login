@@ -20,10 +20,12 @@ func NewRepository(db *gorm.DB) *Repository {
 
 // FindByID find user by its id.
 func (r *Repository) FindByID(ctx context.Context, userID string) (*User, error) {
+
 	var user User
 	if err := r.db.First(&user, userID).Error; err != nil {
 		return nil, err
 	}
+
 	return &user, nil
 }
 

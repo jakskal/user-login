@@ -44,7 +44,7 @@ func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
 
 // FindUserByID find user by its id.
 func (s *Service) FindUserByID(ctx context.Context, userID string) (*User, error) {
-	user, _ := s.userRepo.FindByID(ctx, "123")
+	user, _ := s.userRepo.FindByID(ctx, userID)
 	return user, nil
 }
 
