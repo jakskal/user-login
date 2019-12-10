@@ -54,10 +54,14 @@ func AuthRequired() gin.HandlerFunc {
 		t := time.Now()
 
 		// Set example variable
-		c.Set("userID", claims["user_id"])
+		if claims["UserID"] == nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": "invalid token, user id not exist",
+			})
+		}
 
+		c.Set("userID", claims["UserID"])
 		// before request
-
 		c.Next()
 
 		// after request

@@ -28,29 +28,19 @@ func NewService(userRepo RepositorySystem) Service {
 
 // CreateUser creates an user.
 func (s *Service) CreateUser(ctx context.Context, user User) (*User, error) {
-	hashedPassword, err := hashPassword(user.Password)
+	registeredUser := user
+	err := s.userRepo.Insert(ctx, registeredUser)
 	if err != nil {
 		return nil, err
 	}
 
-	user.Password = hashedPassword
-	err = s.userRepo.Insert(ctx, user)
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	return &registeredUser, nil
 }
 
 // FindUserByID find user by its id.
 func (s *Service) FindUserByID(ctx context.Context, userID string) (*User, error) {
 	user, _ := s.userRepo.FindByID(ctx, userID)
 	return user, nil
-}
-
-// Update update an user.
-func (s *Service) Update(ctx context.Context, user User) (*User, error) {
-	return nil, nil
 }
 
 func hashPassword(plainPassword string) (string, error) {

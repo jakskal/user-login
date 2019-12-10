@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,43 +12,8 @@ type Controller struct {
 	service Service
 }
 
-// RegisterUser regitser a user.
-func (cr *Controller) RegisterUser(c *gin.Context) {
-	var user User
-	err := c.BindJSON(&user)
-	if err != nil {
-		log.Fatal("failed bind sruct", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to bind struct",
-			"error":   err,
-		})
-	}
-	ctx := c.Request.Context()
-
-	registeredUser, err := cr.service.CreateUser(ctx, user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to register",
-			"error":   err,
-		})
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "user registered succesfully",
-		"username": registeredUser.Username,
-	})
-}
-
-// Hello say hello
-func (cr *Controller) Hello(c *gin.Context) {
-	c.JSON(
-		http.StatusOK, gin.H{
-			"message": "you did it",
-		},
-	)
-}
-
-// ListUsers lists all user
-func (cr *Controller) ListUsers(c *gin.Context) {
+// Me find loged in user profile.
+func (cr *Controller) Me(c *gin.Context) {
 	ctx := c.Request.Context()
 	userID, ok := c.Get("userID")
 	if !ok {
@@ -62,13 +26,10 @@ func (cr *Controller) ListUsers(c *gin.Context) {
 				"error": "failed to get user",
 			},
 		)
+		return
 	}
-	c.JSON(
-		http.StatusOK, gin.H{
-			"message": "you did it",
-			"user":    user,
-		},
-	)
+
+	c.JSON(http.StatusOK, user)
 }
 
 // NewController create a new User Controller.

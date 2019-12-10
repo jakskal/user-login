@@ -29,6 +29,7 @@ func (cr *Controller) Login(c *gin.Context) {
 			"message": "failed to bind struct",
 			"error":   err,
 		})
+		return
 	}
 
 	ctx := c.Request.Context()
@@ -39,9 +40,8 @@ func (cr *Controller) Login(c *gin.Context) {
 			"message": "failed to login",
 			"error":   err,
 		})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"token": response,
-	})
+	c.JSON(http.StatusOK, response)
 }
