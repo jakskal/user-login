@@ -2,10 +2,13 @@ package register
 
 import (
 	"context"
+	"errors"
 
-	"github.com/jakskal/user-login/internal/user"
+	"github.com/jakskal/user-login/internal/customer"
+	"github.com/jakskal/user-login/pkg/hash"
+	"github.com/jakskal/user-login/pkg/mailer"
 	"github.com/jakskal/user-login/pkg/rand"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/jinzhu/gorm"
 )
 
 // RepositorySystem defines operations for working with registrant data storage.
@@ -17,21 +20,21 @@ type RepositorySystem interface {
 
 // Service implement business operations for working with registrant.
 type Service struct {
-	registrantRepo RepositorySystem
-	userService    user.Service
+	registrantRepo  RepositorySystem
+	customerService customer.Service
 }
 
 // NewService creates a new registrant service.
-func NewService(registrantRepo RepositorySystem, userService user.Service) Service {
+func NewService(registrantRepo RepositorySystem, customerService customer.Service) Service {
 	return Service{
-		registrantRepo: registrantRepo,
-		userService:    userService,
+		registrantRepo:  registrantRepo,
+		customerService: customerService,
 	}
 }
 
 // Register creates an registrant.
 func (s *Service) Register(ctx context.Context, req Registrant) (*string, error) {
-	hashedPassword, err := hashPassword(req.Password)
+	hashedPassword, err := hash.Password(req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +50,7 @@ func (s *Service) Register(ctx context.Context, req Registrant) (*string, error)
 	return &activationCode, nil
 }
 
-// Verify activate and create user.
+// Verify activate and create customer.
 func (s *Service) Verify(ctx context.Context, activationCode string) error {
 	registrant, err := s.registrantRepo.FindByActivationCode(ctx, activationCode)
 	if err != nil {
@@ -60,12 +63,12 @@ func (s *Service) Verify(ctx context.Context, activationCode string) error {
 
 	registrant.IsActivated = true
 
-	user := user.User{
-		Username: registrant.Username,
+	customer := customer.Customer{
+		Name:     registrant.Name,
 		Email:    registrant.Email,
 		Password: registrant.Password,
 	}
-	_, err = s.userService.CreateUser(ctx, user)
+	_, err = s.customerService.CreateCustomer(ctx, customer)
 	if err != nil {
 		return err
 	}
@@ -78,7 +81,36 @@ func (s *Service) Verify(ctx context.Context, activationCode string) error {
 	return nil
 }
 
-func hashPassword(plainPassword string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
-	return string(bytes), err
+// SendActivationEmail send email for activate account.
+func (s *Service) SendActivationEmail(receiverEmail string, activationCode string) error {
+	emailBody := `
+	<!DOCTYPE html>
+	<html>
+	<body>
+	<p>click this <a href="http://localhost:8080/activate/` + activationCode + `">activation link</a> to activate your account</p>
+	</body>
+	</html>
+	`
+	err := mailer.SendEmail(receiverEmail, emailBody, "Account activation")
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
+
+// CheckRegisterPossibility check if customer can register using following email.
+func (s *Service) CheckRegisterPossibility(customerEmail string) (bool, error) {
+	var possible bool = true
+
+	customer, err := s.customerService.FindCustomerByEmail(context.TODO(), customerEmail)
+	if err != gorm.ErrRecordNotFound {
+		return false, err
+	} else if customer != nil {
+		return false, errors.New("existing email already used")
+	}
+
+	return possible, nil
 }

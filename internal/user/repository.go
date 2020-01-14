@@ -18,6 +18,17 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
+// FindByEmail find user by its email.
+func (r *Repository) FindByEmail(ctx context.Context, userEmail string) (*User, error) {
+
+	var user User
+	if err := r.db.Where(&User{Email: userEmail}).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 // FindByID find user by its id.
 func (r *Repository) FindByID(ctx context.Context, userID string) (*User, error) {
 

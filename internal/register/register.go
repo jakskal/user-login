@@ -10,7 +10,7 @@ var (
 // Registrant is user that try to register.
 type Registrant struct {
 	ID             string `json:"-"`
-	Username       string `json:"username"`
+	Name           string `json:"name"`
 	Email          string `json:"email"`
 	Password       string `json:"password"`
 	ActivationCode string `json:"activation_code"`

@@ -14,8 +14,8 @@ import (
 var JWT_SIGNING_METHOD = jwt.SigningMethodHS256
 var JWT_SIGNATURE_KEY = []byte("the secret of kalimdor")
 
-// AuthRequired scenes software that allows request to communicate and interact with application by authentication.
-func AuthRequired() gin.HandlerFunc {
+// AuthWithRoleRequired scenes software that allows request to communicate and interact with application by authentication.
+func AuthWithRoleRequired(permittedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader("Authorization")
 		fmt.Println("token", authorizationHeader)
@@ -53,22 +53,50 @@ func AuthRequired() gin.HandlerFunc {
 
 		t := time.Now()
 
+		userID := claims["UserID"]
+		role := claims["Role"]
+
 		// Set example variable
-		if claims["UserID"] == nil {
+		if userID == nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "invalid token, user id not exist",
 			})
 		}
 
-		c.Set("userID", claims["UserID"])
+		if role == nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": "invalid token, role not exist",
+			})
+		}
+
+		if !isRoleHasRight(role.(string), permittedRoles...) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"message": "forbidden request",
+			})
+		}
+
+		c.Set("userID", userID)
+		c.Set("role", role)
 		// before request
 		c.Next()
 
 		// after request
 		latency := time.Since(t)
 		log.Print(latency)
+
 		// access the status we are sending
 		status := c.Writer.Status()
 		log.Println(status)
 	}
+}
+
+func isRoleHasRight(role string, roles ...string) bool {
+	isHasRight := false
+	for _, value := range roles {
+		if role == value {
+			isHasRight = true
+		}
+	}
+	return isHasRight
+
 }

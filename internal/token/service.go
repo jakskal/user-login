@@ -26,6 +26,7 @@ func (as *Service) CreateToken(ctx context.Context, req *CreateTokenRequest) (*T
 			ExpiresAt: time.Now().Add(LOGIN_EXPIRATION_DURATION).Unix(),
 		},
 		UserID: req.UserID,
+		Role:   req.Role,
 	}
 
 	jtoken := jwt.NewWithClaims(

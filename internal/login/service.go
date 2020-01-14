@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jakskal/user-login/internal/customer"
 	"github.com/jakskal/user-login/internal/token"
 	"github.com/jakskal/user-login/internal/user"
 	"golang.org/x/crypto/bcrypt"
@@ -11,21 +12,23 @@ import (
 
 // Service implements login service interface.
 type Service struct {
-	userRepo *user.Repository
-	tokenSvc *token.Service
+	userService     user.Service
+	tokenService    *token.Service
+	customerService customer.Service
 }
 
 // NewService creates a new Login Service.
-func NewService(userRepo *user.Repository, tokenSvc *token.Service) Service {
+func NewService(userService user.Service, tokenService *token.Service, customerService customer.Service) Service {
 	return Service{
-		userRepo: userRepo,
-		tokenSvc: tokenSvc,
+		userService:     userService,
+		tokenService:    tokenService,
+		customerService: customerService,
 	}
 }
 
-// Login logging in an user.
-func (s *Service) Login(ctx context.Context, req *Request) (*token.Token, error) {
-	user, err := s.userRepo.FindByUsername(ctx, req.Username)
+// UserLogin logging in an user.
+func (s *Service) UserLogin(ctx context.Context, req *Request) (*token.Token, error) {
+	user, err := s.userService.FindUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +38,42 @@ func (s *Service) Login(ctx context.Context, req *Request) (*token.Token, error)
 		return nil, errors.New("invalid password")
 	}
 
-	token, err := s.tokenSvc.CreateToken(ctx, &token.CreateTokenRequest{UserID: user.ID})
+	token, err := s.tokenService.CreateToken(ctx,
+		&token.CreateTokenRequest{
+			UserID: user.ID,
+			Role:   user.Role,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+
+}
+
+// CustomerLogin logging in an user.
+func (s *Service) CustomerLogin(ctx context.Context, req *Request) (*token.Token, error) {
+	customer, err := s.customerService.FindCustomerByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	isRegisterUsingOauth := customer.Password == ""
+
+	if isRegisterUsingOauth {
+		return nil, errors.New("customer not found")
+	}
+
+	v := comparePasswords(customer.Password, req.Password)
+	if v == false {
+		return nil, errors.New("invalid password")
+	}
+
+	token, err := s.tokenService.CreateToken(ctx,
+		&token.CreateTokenRequest{
+			UserID: customer.ID,
+			Role:   "CUSTOMER",
+		})
 	if err != nil {
 		return nil, err
 	}

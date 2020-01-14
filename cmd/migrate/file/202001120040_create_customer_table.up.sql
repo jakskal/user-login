@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS users(
+CREATE TABLE IF NOT EXISTS customers(
    id serial PRIMARY KEY,
-   username VARCHAR (50) UNIQUE NOT NULL,
+   name VARCHAR (50),
    password text NOT NULL,
    email VARCHAR (300) UNIQUE NOT NULL
 );

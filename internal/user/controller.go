@@ -32,6 +32,33 @@ func (cr *Controller) Me(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// CreateUser creates a new user
+func (cr *Controller) CreateUser(c *gin.Context) {
+	var user User
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to bind struct user",
+			"error":   err.Error(),
+		})
+		return
+
+	}
+	ctx := c.Request.Context()
+
+	createdUser, err := cr.service.CreateUser(ctx, user)
+	if err != nil {
+		c.JSON(
+			http.StatusOK, gin.H{
+				"error": "failed to get user",
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, createdUser)
+}
+
 // NewController create a new User Controller.
 func NewController(service Service) *Controller {
 	return &Controller{

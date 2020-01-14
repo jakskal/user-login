@@ -10,11 +10,14 @@ type Token struct {
 // Claims represents information that contained in claim
 type Claims struct {
 	UserID string
+	Role   string
 	jwt.StandardClaims
 }
 
 type (
+	// CreateTokenRequest represents parameters to create token
 	CreateTokenRequest struct {
 		UserID string
+		Role   string
 	}
 )
